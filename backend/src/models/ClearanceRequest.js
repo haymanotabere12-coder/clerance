@@ -3,7 +3,8 @@ const mongoose = require("mongoose");
 const requestSchema = new mongoose.Schema(
   {
     student: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-    reason: { type: String, enum: ["graduation", "withdrawal", "transfer"], required: true },
+    clearanceType: { type: mongoose.Schema.Types.ObjectId, ref: "ClearanceType" },
+    reason: { type: String, trim: true },
     status: {
       type: String,
       enum: ["Draft", "In Progress", "Blocked", "Completed", "Cancelled"],
@@ -18,3 +19,4 @@ const requestSchema = new mongoose.Schema(
 );
 
 module.exports = mongoose.model("ClearanceRequest", requestSchema);
+

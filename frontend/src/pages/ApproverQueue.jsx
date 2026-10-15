@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import Layout from "../components/Layout";
 import api from "../api";
+import { downloadFile } from "../downloadFile";
 
 const fmt = (d) => (d ? new Date(d).toLocaleDateString() : "");
 
@@ -42,6 +43,15 @@ export default function ApproverQueue() {
     }
   };
 
+  const openFile = async (a) => {
+    setError("");
+    try {
+      await downloadFile(a);
+    } catch {
+      setError("Cannot download the file");
+    }
+  };
+
   return (
     <Layout title="Office Approver">
       {error && <p className="mb-4 text-sm text-red-600 bg-red-50 p-2 rounded">{error}</p>}
@@ -56,17 +66,34 @@ export default function ApproverQueue() {
           const student = a.request?.student;
           return (
             <li key={a._id} className="bg-white p-4 rounded-lg shadow">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="font-semibold text-gray-900">{student?.fullName}</p>
-                  <p className="text-sm text-gray-600">
-                    {student?.universityId}
-                    {student?.department ? ` - ${student.department}` : ""}
+              <div>
+                <p className="font-semibold text-gray-900">{student?.fullName}</p>
+                <p className="text-sm text-gray-600">
+                  {student?.universityId}
+                  {student?.department ? ` - ${student.department}` : ""}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Submitted {fmt(a.request?.submittedAt)}
+                </p>
+                {a.request?.reason && (
+                  <p className="text-sm text-gray-700 mt-2">
+                    <span className="font-medium">Reason:</span> {a.request.reason}
                   </p>
-                  <p className="text-xs text-gray-500 capitalize mt-1">
-                    {a.request?.reason} - submitted {fmt(a.request?.submittedAt)}
-                  </p>
-                </div>
+                )}
+                {a.attachments?.length > 0 && (
+                  <div className="mt-2">
+                    <span className="text-sm font-medium text-gray-700">Document: </span>
+                    {a.attachments.map((f) => (
+                      <button
+                        key={f._id}
+                        onClick={() => openFile(f)}
+                        className="text-sm text-blue-600 hover:underline mr-3"
+                      >
+                        {f.originalName}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {rejectingId === a._id ? (

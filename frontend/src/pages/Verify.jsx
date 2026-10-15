@@ -49,9 +49,7 @@ export default function Verify() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
           />
-          <button className="bg-blue-600 text-white rounded px-4 py-2 hover:bg-blue-700">
-            Check
-          </button>
+          <button className="bg-blue-600 text-white rounded px-4 py-2 hover:bg-blue-700">Check</button>
         </form>
 
         {loading && <p className="text-gray-500">Checking...</p>}
@@ -67,9 +65,8 @@ export default function Verify() {
           <div className="bg-green-50 border border-green-200 rounded p-4 space-y-1">
             <p className="font-semibold text-green-700">Valid certificate</p>
             <p className="text-sm"><span className="text-gray-500">Name:</span> {result.studentName}</p>
-            <p className="text-sm"><span className="text-gray-500">University ID:</span> {result.universityId}</p>
-            {result.department && (
-              <p className="text-sm"><span className="text-gray-500">Department:</span> {result.department}</p>
+            {result.clearanceType && (
+              <p className="text-sm"><span className="text-gray-500">Clearance type:</span> {result.clearanceType}</p>
             )}
             <p className="text-sm"><span className="text-gray-500">Serial:</span> {result.serialNumber}</p>
             <p className="text-sm">

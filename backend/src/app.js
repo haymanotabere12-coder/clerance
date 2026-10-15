@@ -17,10 +17,14 @@ app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/requests", require("./routes/requestRoutes"));
 app.use("/api/approvals", require("./routes/approvalRoutes"));
 app.use("/api/certificates", require("./routes/certificateRoutes"));
+app.use("/api/clearance-types", require("./routes/clearanceTypeRoutes"));
+app.use("/api/attachments", require("./routes/attachmentRoutes"));
 app.use("/api/admin", require("./routes/adminRoutes"));
 app.get("/api/verify/:serial", require("./controllers/certificateController").verify);
 
 app.use(errorHandler);
 
 module.exports = app;
+
+
 

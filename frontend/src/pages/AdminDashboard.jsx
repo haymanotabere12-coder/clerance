@@ -2,11 +2,13 @@ import { useState } from "react";
 import Layout from "../components/Layout";
 import ReportsTab from "../components/ReportsTab";
 import OfficesTab from "../components/OfficesTab";
+import ClearanceTypesTab from "../components/ClearanceTypesTab";
 import UsersTab from "../components/UsersTab";
 
 const TABS = [
   { id: "reports", label: "Reports" },
   { id: "offices", label: "Offices" },
+  { id: "types", label: "Clearance Types" },
   { id: "users", label: "Users" },
 ];
 
@@ -14,7 +16,7 @@ export default function AdminDashboard() {
   const [tab, setTab] = useState("reports");
   return (
     <Layout title="Admin">
-      <div className="flex gap-2 mb-4">
+      <div className="flex flex-wrap gap-2 mb-4">
         {TABS.map((t) => (
           <button
             key={t.id}
@@ -29,6 +31,7 @@ export default function AdminDashboard() {
       </div>
       {tab === "reports" && <ReportsTab />}
       {tab === "offices" && <OfficesTab />}
+      {tab === "types" && <ClearanceTypesTab />}
       {tab === "users" && <UsersTab />}
     </Layout>
   );

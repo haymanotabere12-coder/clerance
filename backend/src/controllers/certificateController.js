@@ -10,10 +10,9 @@ const verifyBase = () => process.env.VERIFY_BASE_URL || "http://localhost:5000/a
 const fmt = (d) => new Date(d).toISOString().slice(0, 10);
 
 exports.download = asyncHandler(async (req, res) => {
-  const request = await ClearanceRequest.findById(req.params.requestId).populate(
-    "student",
-    "fullName universityId department"
-  );
+  const request = await ClearanceRequest.findById(req.params.requestId)
+    .populate("student", "fullName universityId department")
+    .populate("clearanceType", "name");
   if (!request) return res.status(404).json({ message: "Request not found" });
 
   const isOwner = String(request.student._id) === String(req.user._id);
@@ -27,6 +26,7 @@ exports.download = asyncHandler(async (req, res) => {
   const cert = await ensureCertificate(request, request.student);
   const approvals = await Approval.find({ request: request._id }).populate("office", "name").sort("stage");
   const qr = await QRCode.toBuffer(`${verifyBase()}/${cert.serialNumber}`, { width: 220, margin: 1 });
+  const typeName = request.clearanceType?.name || "Student Clearance";
 
   res.setHeader("Content-Type", "application/pdf");
   res.setHeader("Content-Disposition", `attachment; filename="${cert.serialNumber}.pdf"`);
@@ -44,10 +44,8 @@ exports.download = asyncHandler(async (req, res) => {
   const dept = request.student.department ? `  |  Department: ${request.student.department}` : "";
   doc.font("Helvetica").fontSize(12).text(`ID: ${request.student.universityId}${dept}`, { align: "center" });
 
-  doc.moveDown(1).text(
-    `has been cleared of all obligations to the university for the purpose of ${request.reason}.`,
-    { align: "center" }
-  );
+  doc.moveDown(1).text("has been cleared of all obligations to the university.", { align: "center" });
+  doc.moveDown(0.5).font("Helvetica-Bold").text(`Clearance type: ${typeName}`, { align: "center" });
 
   doc.moveDown(2).font("Helvetica-Bold").text("Cleared by:");
   doc.font("Helvetica");
@@ -66,10 +64,9 @@ exports.download = asyncHandler(async (req, res) => {
 });
 
 exports.verify = asyncHandler(async (req, res) => {
-  const cert = await Certificate.findOne({ serialNumber: req.params.serial }).populate(
-    "student",
-    "fullName universityId department"
-  );
+  const cert = await Certificate.findOne({ serialNumber: req.params.serial })
+    .populate("student", "fullName universityId")
+    .populate({ path: "request", populate: { path: "clearanceType", select: "name" } });
   if (!cert) return res.status(404).json({ valid: false, message: "Certificate not found" });
 
   const valid = cert.hash === makeHash(cert.serialNumber, cert.student, cert.issuedAt);
@@ -77,8 +74,7 @@ exports.verify = asyncHandler(async (req, res) => {
     valid,
     serialNumber: cert.serialNumber,
     studentName: cert.student.fullName,
-    universityId: cert.student.universityId,
-    department: cert.student.department,
+    clearanceType: cert.request?.clearanceType?.name || null,
     issuedAt: cert.issuedAt,
   });
 });

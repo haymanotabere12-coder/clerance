@@ -1,5 +1,6 @@
 const { z } = require("zod");
 const Approval = require("../models/Approval");
+const Attachment = require("../models/Attachment");
 const asyncHandler = require("../utils/asyncHandler");
 const { advance } = require("../services/workflowService");
 
@@ -28,7 +29,14 @@ exports.queue = asyncHandler(async (req, res) => {
       populate: { path: "student", select: "fullName universityId department" },
     })
     .sort("createdAt");
-  res.json(approvals);
+  const ids = approvals.map((a) => a.request?._id).filter(Boolean);
+  const files = await Attachment.find({ request: { $in: ids } }).select("request originalName size");
+  res.json(
+    approvals.map((a) => ({
+      ...a.toObject(),
+      attachments: files.filter((x) => String(x.request) === String(a.request?._id)),
+    }))
+  );
 });
 
 exports.approve = asyncHandler(async (req, res) => {
@@ -62,3 +70,4 @@ exports.reject = asyncHandler(async (req, res) => {
   const request = await advance(approval.request);
   res.json({ message: "Rejected", requestStatus: request.status });
 });
+
